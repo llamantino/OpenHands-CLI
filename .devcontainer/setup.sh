@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+git config --global --add safe.directory "$(realpath .)"
+
+if ! command -v uv >/dev/null 2>&1; then
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+uv sync --group dev
+uv run pre-commit install
