@@ -161,7 +161,7 @@ def launch_gui_server(mount_cwd: bool = False, gpu: bool = False) -> None:
     if mount_cwd:
         cwd = Path.cwd()
         # Following the documentation at
-        # https://docs.all-hands.dev/usage/runtimes/docker#connecting-to-your-filesystem
+        # https://docs.openhands.dev/usage/runtimes/docker#connecting-to-your-filesystem
         docker_cmd.extend(
             [
                 "-e",
