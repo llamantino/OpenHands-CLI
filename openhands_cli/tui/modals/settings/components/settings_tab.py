@@ -90,7 +90,6 @@ class SettingsTab(Container):
                             placeholder="10–3600 (optional)",
                             id="timeout_input",
                             classes="form_input",
-                            # Enabled when API key is entered
                             disabled=True,
                         )
 
