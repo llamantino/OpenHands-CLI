@@ -511,6 +511,9 @@ class OpenHandsApp(CollapsibleNavigationMixin, App):
         # Handle Tab from input area - focus most recent cell
         # Skip if autocomplete dropdown is visible (Tab is used for selection)
         if event.key == "tab" and isinstance(self.focused, Input | TextArea):
+            if getattr(self.screen, "is_modal", False):
+                return
+
             if not self._is_autocomplete_showing():
                 collapsibles = list(self.scroll_view.query(Collapsible))
                 if collapsibles:

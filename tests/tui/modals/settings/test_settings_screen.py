@@ -515,3 +515,18 @@ async def test_show_and_clear_message(app):
     screen.message_widget.update.assert_called_with("")
     screen.message_widget.remove_class.assert_any_call("error_message")
     screen.message_widget.remove_class.assert_any_call("success_message")
+
+
+@pytest.mark.asyncio
+async def test_settings_scroll_containers_are_not_focusable():
+    """Scroll wrappers are removed from the tab order in all settings tabs."""
+    with patch.object(SettingsScreen, "is_initial_setup_required", return_value=False):
+        app = SettingsTestApp()
+
+    async with app.run_test():
+        screen = app.settings_screen
+
+        assert screen.AUTO_FOCUS == "#mode_select"
+        assert screen.query_one("#settings_form").can_focus is False
+        assert screen.query_one("#cli_settings_content").can_focus is False
+        assert screen.query_one("#critic_settings_content").can_focus is False

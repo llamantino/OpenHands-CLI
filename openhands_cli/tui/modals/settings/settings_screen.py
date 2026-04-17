@@ -39,9 +39,11 @@ from openhands_cli.tui.modals.settings.utils import SettingsFormData, save_setti
 class SettingsScreen(ModalScreen):
     """A modal screen for configuring settings."""
 
+    AUTO_FOCUS = "#mode_select"
     BINDINGS: ClassVar = [
         ("escape", "cancel", "Cancel"),
-        ("tab", "focus_next", "Navigate"),
+        ("tab", "focus_next_widget", "Next"),
+        ("shift+tab", "focus_previous_widget", "Previous"),
     ]
 
     CSS_PATH = "settings_screen.tcss"
@@ -149,6 +151,7 @@ class SettingsScreen(ModalScreen):
         self._load_current_settings()
         self._update_advanced_visibility()
         self._update_field_dependencies()
+        self._disable_scroll_container_focus()
 
     def on_show(self) -> None:
         """Reload settings when the screen is shown."""
@@ -159,6 +162,27 @@ class SettingsScreen(ModalScreen):
             self._load_current_settings()
             self._update_advanced_visibility()
             self._update_field_dependencies()
+            self._disable_scroll_container_focus()
+
+    def _disable_scroll_container_focus(self) -> None:
+        """Remove settings tab scroll containers from the tab order."""
+        for widget_id in (
+            "settings_form",
+            "cli_settings_content",
+            "critic_settings_content",
+        ):
+            try:
+                self.query_one(f"#{widget_id}").can_focus = False
+            except Exception:
+                pass
+
+    def action_focus_next_widget(self) -> None:
+        """Move focus to the next widget in the app focus chain."""
+        self.app.action_focus_next()
+
+    def action_focus_previous_widget(self) -> None:
+        """Move focus to the previous widget in the app focus chain."""
+        self.app.action_focus_previous()
 
     def _clear_form(self) -> None:
         """Clear all form values before reloading."""

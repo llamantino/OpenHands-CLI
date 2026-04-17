@@ -1,7 +1,12 @@
 """Tests for OpenHandsApp in textual_app.py."""
 
 import uuid
+from types import SimpleNamespace
+from typing import cast
 from unittest.mock import Mock
+
+from textual import events
+from textual.widgets import Input
 
 from openhands_cli.tui.panels.history_side_panel import HistorySidePanel
 from openhands_cli.tui.textual_app import OpenHandsApp
@@ -127,3 +132,58 @@ class TestInputAreaContainerCommands:
         input_area.post_message.assert_called_once()
         posted_message = input_area.post_message.call_args[0][0]
         assert isinstance(posted_message, CreateConversation)
+
+
+class TestTabHandlingInModalScreens:
+    """Tests for tab handling when a modal screen is active."""
+
+    def test_on_key_does_not_hijack_tab_from_inputs_in_modal(self):
+        event = SimpleNamespace(
+            key="tab",
+            is_printable=False,
+            stop=Mock(),
+            prevent_default=Mock(),
+        )
+        scroll_view = Mock()
+        app = SimpleNamespace(
+            focused=Input(),
+            screen=SimpleNamespace(is_modal=True),
+            scroll_view=scroll_view,
+            _is_autocomplete_showing=Mock(return_value=False),
+            input_field=Mock(),
+        )
+
+        OpenHandsApp.on_key(cast(OpenHandsApp, app), cast(events.Key, event))
+
+        scroll_view.query.assert_not_called()
+        event.stop.assert_not_called()
+        event.prevent_default.assert_not_called()
+
+    def test_on_key_keeps_non_modal_input_tab_behavior(self):
+        event = SimpleNamespace(
+            key="tab",
+            is_printable=False,
+            stop=Mock(),
+            prevent_default=Mock(),
+        )
+        last_title = Mock()
+        last_collapsible = Mock()
+        last_collapsible.query_one.return_value = last_title
+        scroll_view = Mock()
+        scroll_view.query.return_value = [last_collapsible]
+        app = SimpleNamespace(
+            focused=Input(),
+            screen=SimpleNamespace(is_modal=False),
+            scroll_view=scroll_view,
+            _is_autocomplete_showing=Mock(return_value=False),
+            input_field=Mock(),
+        )
+
+        OpenHandsApp.on_key(cast(OpenHandsApp, app), cast(events.Key, event))
+
+        scroll_view.query.assert_called_once()
+        last_collapsible.query_one.assert_called_once()
+        last_title.focus.assert_called_once()
+        last_collapsible.scroll_visible.assert_called_once()
+        event.stop.assert_called_once()
+        event.prevent_default.assert_called_once()
